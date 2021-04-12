@@ -1,5 +1,4 @@
 /*nrf24l01: MSbit to LSbit, LSbyte to MSbyte
-/*bits definition section*/
 #include <stdio.h>
 #include <stdint.h>
 
@@ -8,7 +7,7 @@
 #define STANDBYI_DELAY                2
 #define PRX_MODE_DELAY                100
 #define ADDRESS_WIDTH_DEFAULT         5               /*address width in bytes, for default value*/
-#define RF_CHANNEL_DEFAULT            32
+#define RF_CHANNEL_DEFAULT            32        
 #define RF_DATARATE_DEFAULT           1000            /*250, 1000, 2000*/
 #define RF_PWR_DEFAULT                6               /*0, -6, -12, -18*/
 #define STATIC_PAYLOAD_WIDTH_DEFAULT  1               /*for static payload mode, configurable between 1 and 32 bytes for PRX device ONLY (RX_PW_Pn, n for data pipe n)(no register for payload length in PTX device)*/
@@ -62,6 +61,7 @@
 #define TX_BUFFER                     1
 #define RX_BUFFER                     0
 
+/*bits definition section*/
 #define MASK_RX_DR          6               /*mask interrupt caused by RX_DR: 1 interrupt not reflected on IRQ pin (IRQ is active low), inside CONFIG register*/
 #define MASK_TX_DS          5               /*mask interrupt caused by TX_DS: 1 interrupt not reflected on IRQ pin (IRQ is active low), inside CONFIG register*/
 #define MASK_MAX_RT         4               /*mask interrupt caused by MAX_RT means maximum number of retransmissions reached: 1 interrupt not reflected on IRQ pin (IRQ is active low), inside CONFIG register*/
@@ -176,10 +176,10 @@
 #define W_TX_PAYLOAD_NOACK  0XB0              /*used in TX mode, disables AUTOACK on this specific packet. must be first enabled in FEATURE register by setting the EN_DYN_ACK bit. if used, PTX will not wait for ACK and goes directly to standby I*/
 #define NOP_CMD             0XFF              /*might be used to read the status register*/
 
-void nrf24_reset();                             /*setup of spi, pins, prx address width, rf channel, rf power, rf datarate, crc config, interrupts mask, datapipe enabling, payload width, datapipe address config, ptx address, auto retransmit setup, auto acknowledgment setup, dynamic payload setup*/
+void nrf24_reset();                            
 void nrf24_device(uint8_t device_mode, uint8_t reset_state);
 uint8_t SPI_send_command(uint8_t command);          
-void pinout_Initializer();          /**/
+void pinout_Initializer();         
 void SPI_Initializer();
 void nrf24_mode(uint8_t mode);
 void nrf24_SPI(uint8_t input);
