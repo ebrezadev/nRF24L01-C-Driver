@@ -22,9 +22,9 @@ For POWER_SAVING or TURN_OFF:
 You cannot send or receive any data in these modes of operation, these are used only to reduce power consumption. device_mode can be changed mid code.
 
 General considerations:
-the default value for transmit radio power is set to 0 dbm.
-the default value for radio channel is set to channel 64.
-the default payload width is 1 byte and its static._
+the default value for transmit radio power is set to -6 dbm.
+the default value for radio channel is set to channel 32.
+the default payload width is 1 byte and its static.
 the default value for datarate is 1Mbps.
 
 ___________________________________________HOW IT WORKS
