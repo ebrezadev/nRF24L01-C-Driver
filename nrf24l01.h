@@ -1,4 +1,4 @@
-/*nrf24l01: MSbit to LSbit, LSbyte to MSbyte
+/*nrf24l01: MSbit to LSbit, LSbyte to MSbyte*/
 #include <stdio.h>
 #include <stdint.h>
 
