@@ -41,12 +41,12 @@ LEVEL 1:
  *  void nrf24_SPI(uint8_t input)
  *  uint8_t SPI_send_command(uint8_t command)
  *  void nrf24_CE(uint8_t input)
- *  
+ 
 LEVEL 2:
  *  void nrf24_write(uint8_t address, uint8_t *value, uint8_t data_length, uint8_t spi_state)
  *  void nrf24_read(uint8_t address, uint8_t *value, uint8_t data_length, uint8_t spi_state)
  *  void nrf24_send_payload(uint8_t *payload, uint8_t payload_width)
- *  
+ 
 LEVEL 3:
  *  void nrf24_mode(uint8_t mode)
  *  void nrf24_crc_configuration(uint8_t crc_enable, uint8_t crc_encoding_scheme)
@@ -63,7 +63,7 @@ LEVEL 3:
  *  void nrf24_auto_acknowledgment_setup(uint8_t datapipe)
  *  void nrf24_automatic_retransmit_setup(uint16_t delay_time, uint8_t retransmit_count)
  *  void nrf24_dynamic_ack(uint8_t state)
- *  
+  
 LEVEL 4:
  *  void nrf24_device(uint8_t device_mode, uint8_t reset_state)
  *  void nrf24_reset()
