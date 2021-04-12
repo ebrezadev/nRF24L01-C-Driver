@@ -1,4 +1,4 @@
-nRF24L01+ c library
+___________________________________________nRF24L01+ c library
 
 version 1.0
 Reza Ebrahimi
@@ -25,20 +25,20 @@ nrf24_device initializes the low level API like SPI etc, and sets nrf24l01+ with
 These settings and values can be changed with manipulating macros inside nrf24l01.h, or by calling LEVEL 3 
 functions. the next steps depend on the chosen device_mode.
 
-*For TRANSMITTER:
+For TRANSMITTER:
 Use nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowledgement_state) to send an array of 1 byte blocks, with the specified payload_width and acknowledgement_state (could be ACK_MODE or NO_ACK_MODE). If nrf24l01+ is set to static payload width, payload_width is ignored. nrf24_transmit has 2 different outputs: TRANSMIT_BEGIN and TRANSMIT_FAIL (in case of wrong mode of operation or full TX FIFO buffer). Next, you can use nrf24_transmit_status() which has no input, but gives back status: TRANSMIT_IN_PROGRESS if the payload is still not sent or if TX buffer is empty, TRANSMIT_DONE if the payload is sent successfully, TRANSMIT_FAILED if the payload has reached he maximum number of retransmits (only in ACK_MODE).
 
-*For RECEIVER:
+For RECEIVER:
 nrf24_receive(uint8_t *payload, uint8_t payload_width) can be used to both poll the RX buffer, and receive the payload if its already inside the buffer. payload_width is ignored if nrf24l01+ was set to static payload width mode. nrf24_receive outputs the polling results as: OPERATION_ERROR if not in RECEIVER mode, RECEIVE_FIFO_EMPTY in case of empty buffer (payload array is not updated) and OPERATION_DONE if the received dat is saved inside payload array.
 
- *For POWER_SAVING or TURN_OFF:
+For POWER_SAVING or TURN_OFF:
  *  You cannot send or receive any data in these modes of operation, these are used only to reduce power consumption. 
  *  device_mode can be changed mid code.
  *  
  *General considerations:
  *  the default value for transmit radio power is set to 0 dbm.
  *  the default value for radio channel is set to channel 64.
- *  the default payload width is 1 byte and its static.
+ *  the default payload width is 1 byte and its static._
  *  the default value for datarate is 1Mbps.
  *
  ********************************HOW IT WORKS*****************************************
