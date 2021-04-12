@@ -1,29 +1,17 @@
 ___________________________________________nRF24L01+ c library
 
-version 1.0
-Reza Ebrahimi
+* version 1.0
+* Reza Ebrahimi
 
-This library is written in portable C, and is MCU independant. It consumes a small
-In order to implement it to your MCU of choice, you need to manipulate functions inside
-nrf24l01_low_level.c file (SPI, pin configurations) and leave other files as they are.
-This library is written based on the nRF24L01+ Preliminary Product Specification released 
-by Nordic Semiconductor and is not influenced by other (probably numorous) libraries out there.
-Any resemblance to pre-existing code is unintentional.
+This library is written in portable C, and is MCU independant. It consumes a small amount of RAM (under 50 bytes) and program memory (under 2 KB). In order to implement it to your MCU of choice, you need to manipulate functions inside nrf24l01_low_level.c file (SPI, pin configurations) and leave other files as they are. This library is written based on the nRF24L01+ Preliminary Product Specification released by Nordic Semiconductor and is not influenced by other (probably numorous) libraries out there. Any resemblance to pre-existing code is unintentional.
 
-You can use this library in any way, shape or form. I'd be very happy if you mention my name
-though.
+You can use this library in any way, shape or form. I'd be very happy if you mention my name though.
 
 ___________________________________________HOW TO USE
 
-As mentioned earlier, first you need to implement low level settings like SPI, delay function
-and pin configurations inside nrf24l01_low_level.c file (LEVEL 1).
+As mentioned earlier, first you need to implement low level settings like SPI, delay function and pin configurations inside nrf24l01_low_level.c file (LEVEL 1).
 
-Start by calling nrf24_device(uint8_t device_mode, uint8_t reset_state) function. You can set the
-device mode to either TRANSMITTER, RECEIVER, POWER_SAVING or TURN_OFF and reset_state to RESET or
-NO_RESET. if this is the first time nrf24_device is called, nrf24l01+ is reset regardless of reset_state.
-nrf24_device initializes the low level API like SPI etc, and sets nrf24l01+ with default values and settings.
-These settings and values can be changed with manipulating macros inside nrf24l01.h, or by calling LEVEL 3 
-functions. the next steps depend on the chosen device_mode.
+Start by calling nrf24_device(uint8_t device_mode, uint8_t reset_state) function. You can set the device mode to either TRANSMITTER, RECEIVER, POWER_SAVING or TURN_OFF and reset_state to RESET or NO_RESET. if this is the first time nrf24_device is called, nrf24l01+ is reset regardless of reset_state. nrf24_device initializes the low level API like SPI etc, and sets nrf24l01+ with default values and settings. These settings and values can be changed with manipulating macros inside nrf24l01.h, or by calling LEVEL 3 functions. the next steps depend on the chosen device_mode.
 
 For TRANSMITTER:
 Use nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowledgement_state) to send an array of 1 byte blocks, with the specified payload_width and acknowledgement_state (could be ACK_MODE or NO_ACK_MODE). If nrf24l01+ is set to static payload width, payload_width is ignored. nrf24_transmit has 2 different outputs: TRANSMIT_BEGIN and TRANSMIT_FAIL (in case of wrong mode of operation or full TX FIFO buffer). Next, you can use nrf24_transmit_status() which has no input, but gives back status: TRANSMIT_IN_PROGRESS if the payload is still not sent or if TX buffer is empty, TRANSMIT_DONE if the payload is sent successfully, TRANSMIT_FAILED if the payload has reached he maximum number of retransmits (only in ACK_MODE).
@@ -32,8 +20,7 @@ For RECEIVER:
 nrf24_receive(uint8_t *payload, uint8_t payload_width) can be used to both poll the RX buffer, and receive the payload if its already inside the buffer. payload_width is ignored if nrf24l01+ was set to static payload width mode. nrf24_receive outputs the polling results as: OPERATION_ERROR if not in RECEIVER mode, RECEIVE_FIFO_EMPTY in case of empty buffer (payload array is not updated) and OPERATION_DONE if the received dat is saved inside payload array.
 
 For POWER_SAVING or TURN_OFF:
-You cannot send or receive any data in these modes of operation, these are used only to reduce power consumption. 
-device_mode can be changed mid code.
+You cannot send or receive any data in these modes of operation, these are used only to reduce power consumption. device_mode can be changed mid code.
 
 General considerations:
 the default value for transmit radio power is set to 0 dbm.
