@@ -1,20 +1,19 @@
 #include "nrf24l01.h"
 
 /*global variables related to this file*/
-static uint8_t SPI_command;                                       /*one variable used for 1 byte spi command*/
-static uint8_t register_current_value;                            /*in order to change some bits of nrf24l01+ internal registers value or to check their content*/
+static uint8_t SPI_command;                                       /*1 byte spi command*/
+static uint8_t register_current_value;                            /*in order to change some bits of internal registers or to check their content*/
 static uint8_t register_new_value;                                /*used to write new value to nrf24l01+ registers*/
-static uint8_t write_pointer;                                     /*1 byte of data, which its address is used for write and read functions (as a pointer)*/
-static uint8_t config_register_value;
+static uint8_t write_pointer;                                     /*used as an input for read and write functions (as a pointer)*/
 static uint8_t current_address_width;                             /*current address width for receiver pipe addresses (up to 6 pipes), from 3 to 5 bytes*/
 static uint8_t reset_flag = 0;                                    /*reset flag lets the software know if the nrf24l01+ has ever been reset or not*/
-static uint8_t current_mode = DEVICE_NOT_INITIALIZED;             /*current mode of operation: */
+static uint8_t current_mode = DEVICE_NOT_INITIALIZED;             /*current mode of operation: DEVICE_NOT_INITIALIZED, PRX, PTX, STANDBYI, STANDBYII, POWER_DOWN*/
 static uint8_t current_payload_width;                             /*payload width could be from 1 to 32 bytes, in either dynamic or static forms*/
-static uint8_t current_acknowledgement_state = NO_ACK_MODE;       /*idicates if the transmitting method needs acknowledge or not*/
+static uint8_t current_acknowledgement_state = NO_ACK_MODE;       
 static uint8_t dynamic_payload = DISABLE;
 
-/*2 dimensional array of pipe addresses (5 byte address width) by default. you can change addresses using a new array and later
-  pipe 1 address could be anything. pipe 3 to 6 addresses share the first 4 bytes with pipe 2 and only differ in byte 5*/
+/*2 dimensional array of pipe addresses (5 byte address width) by default. you can change addresses using a new array later.
+  Pipe 1 address could be anything. pipe 3 to 6 addresses share the first 4 bytes with pipe 2 and only differ in byte 5*/
 uint8_t datapipe_address[MAXIMUM_NUMBER_OF_DATAPIPES][ADDRESS_WIDTH_DEFAULT] = {
   {0X20, 0XC3, 0XC2, 0XC1, 0XA0},
   {0X20, 0XC3, 0XC2, 0XC1, 0XA1},
@@ -24,7 +23,7 @@ uint8_t datapipe_address[MAXIMUM_NUMBER_OF_DATAPIPES][ADDRESS_WIDTH_DEFAULT] = {
   {0X20, 0XC3, 0XC2, 0XC1, 0XA5}
 };
 
-/*function to enable or disable dynamic acknowledge. if enaled, you can disable acknowledge
+/*function to enable or disable dynamic acknowledge. if enabled, you can disable acknowledge
    on a specific payload with W_TX_PAYLOAD_NOACK or enable acknowledge using W_TX_PAYLOAD commands.
    if disabled, you cannot disable acknowledging a payload. manipulates EN_DYN_ACK inside FEATURE*/
 void nrf24_dynamic_ack(uint8_t state)
@@ -99,6 +98,8 @@ uint8_t nrf24_transmit_status()
     return TRANSMIT_IN_PROGRESS;
 }
 
+/*the receive function output is used as a polling method to check the received data inside RX FIFOs. 
+If there is any data available, it will be loaded inside payload array*/
 uint8_t nrf24_receive(uint8_t *payload, uint8_t payload_width)
 {
   if (current_mode == PRX)
@@ -217,7 +218,8 @@ void nrf24_reset()
 }
 
 /*used by firmware to set the nrf24 mode in TRANSMITTER, RECEIVER, POWER_SAVING or TURN_OFF states, and reseting the device
-  if it has not been done yet. This is the initializer, and everything starts by calling nrf24_device first*/
+  if it has not been done yet. This is the initializer, and everything starts by calling nrf24_device first.It has a higher
+  level of abstraction than nrf24_mode and must be used by user*/
 void nrf24_device(uint8_t device_mode, uint8_t reset_state)
 {
   SPI_Initializer();
@@ -302,11 +304,13 @@ void nrf24_dynamic_payload(uint8_t state, uint8_t datapipe)
   }
 }
 
+/*on nrf24l01+ there is only one address for PTX device which must be the same as PRX data pipe address 0*/
 void nrf24_datapipe_ptx(uint8_t datapipe_number)
 {
   nrf24_write(TX_ADDR_ADDRESS, &datapipe_address[datapipe_number - 1][0], current_address_width, CLOSE);
 }
 
+/*setting the 6 datapipe addresses using the datapipe_address[][]*/
 void nrf24_datapipe_address_configuration()
 {
   uint8_t address = RX_ADDR_P0_ADDRESS;
@@ -317,6 +321,7 @@ void nrf24_datapipe_address_configuration()
   }
 }
 
+/*function to change static payload width, from 1 to 32 bytes in each payload*/
 void nrf24_prx_static_payload_width(uint8_t static_payload_width, uint8_t number_of_datapipes)
 {
   for (uint8_t address = RX_PW_P0_ADDRESS; number_of_datapipes; number_of_datapipes--)
