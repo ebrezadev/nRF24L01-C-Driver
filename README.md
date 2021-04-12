@@ -75,3 +75,6 @@ LEVEL 4:
  *  uint8_t nrf24_transmit_status()
  *  uint8_t nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowledgement_state)
 
+___________________________________________EXAMPLE 
+ 
+ As an example, a simple byte transmitter for arduino/atmega boards is provided.
