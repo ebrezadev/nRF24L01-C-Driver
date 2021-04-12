@@ -13,7 +13,7 @@ Any resemblance to pre-existing code is unintentional.
 You can use this library in any way, shape or form. I'd be very happy if you mention my name
 though.
 
-HOW TO USE
+___________________________________________HOW TO USE
 
 As mentioned earlier, first you need to implement low level settings like SPI, delay function
 and pin configurations inside nrf24l01_low_level.c file (LEVEL 1).
@@ -32,22 +32,22 @@ For RECEIVER:
 nrf24_receive(uint8_t *payload, uint8_t payload_width) can be used to both poll the RX buffer, and receive the payload if its already inside the buffer. payload_width is ignored if nrf24l01+ was set to static payload width mode. nrf24_receive outputs the polling results as: OPERATION_ERROR if not in RECEIVER mode, RECEIVE_FIFO_EMPTY in case of empty buffer (payload array is not updated) and OPERATION_DONE if the received dat is saved inside payload array.
 
 For POWER_SAVING or TURN_OFF:
- *  You cannot send or receive any data in these modes of operation, these are used only to reduce power consumption. 
- *  device_mode can be changed mid code.
- *  
- *General considerations:
- *  the default value for transmit radio power is set to 0 dbm.
- *  the default value for radio channel is set to channel 64.
- *  the default payload width is 1 byte and its static._
- *  the default value for datarate is 1Mbps.
- *
- ********************************HOW IT WORKS*****************************************
- *
- *Functions can be categorized into different levels: from low level APIs up to higher ones.
- *Lower level APIs are used by higher level APIs. Use LEVEL 4 functions (or sometimes LEVEL 3, 
- *if you want to change settings) in your firmware.
- *
- *LEVEL 1:
+You cannot send or receive any data in these modes of operation, these are used only to reduce power consumption. 
+device_mode can be changed mid code.
+
+General considerations:
+the default value for transmit radio power is set to 0 dbm.
+the default value for radio channel is set to channel 64.
+the default payload width is 1 byte and its static._
+the default value for datarate is 1Mbps.
+
+___________________________________________HOW IT WORKS
+
+Functions can be categorized into different levels: from low level APIs up to higher ones.
+Lower level APIs are used by higher level APIs. Use LEVEL 4 functions (or sometimes LEVEL 3, 
+if you want to change settings) in your firmware.
+
+LEVEL 1:
  *  void delay_function(uint32_t duration_ms)
  *  void SPI_Initializer()
  *  void pinout_Initializer()
@@ -55,12 +55,12 @@ For POWER_SAVING or TURN_OFF:
  *  uint8_t SPI_send_command(uint8_t command)
  *  void nrf24_CE(uint8_t input)
  *  
- *LEVEL 2:
+LEVEL 2:
  *  void nrf24_write(uint8_t address, uint8_t *value, uint8_t data_length, uint8_t spi_state)
  *  void nrf24_read(uint8_t address, uint8_t *value, uint8_t data_length, uint8_t spi_state)
  *  void nrf24_send_payload(uint8_t *payload, uint8_t payload_width)
  *  
- *LEVEL 3:
+LEVEL 3:
  *  void nrf24_mode(uint8_t mode)
  *  void nrf24_crc_configuration(uint8_t crc_enable, uint8_t crc_encoding_scheme)
  *  void nrf24_interrupt_mask(uint8_t rx_mask, uint8_t tx_mask, uint8_t max_rt_mask)
@@ -77,11 +77,11 @@ For POWER_SAVING or TURN_OFF:
  *  void nrf24_automatic_retransmit_setup(uint16_t delay_time, uint8_t retransmit_count)
  *  void nrf24_dynamic_ack(uint8_t state)
  *  
- *LEVEL 4:
+LEVEL 4:
  *  void nrf24_device(uint8_t device_mode, uint8_t reset_state)
  *  void nrf24_reset()
  *  uint8_t nrf24_flush(uint8_t fifo_select)
  *  uint8_t nrf24_receive(uint8_t *payload, uint8_t payload_width)
  *  uint8_t nrf24_transmit_status()
  *  uint8_t nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowledgement_state)
- */
+
