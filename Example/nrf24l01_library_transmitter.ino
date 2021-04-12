@@ -15,7 +15,7 @@ void setup()
 void loop()
 {
   delay(TIME_GAP);
-  while(nrf24_transmit(&ascending_number, 1, NO_ACK_MODE) == TRANSMIT_FAIL))      //wait until payload is loaded into TX buffer
+  while(nrf24_transmit(&ascending_number, 1, NO_ACK_MODE) == TRANSMIT_FAIL)      //wait until payload is loaded into TX buffer
   {
     Serial.println("Transmit fail!");
   }
