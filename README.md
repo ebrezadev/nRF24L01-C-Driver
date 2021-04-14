@@ -1,4 +1,4 @@
-#nRF24L01+ C LIBRARY
+# nRF24L01+ C LIBRARY
 * version 1.0
 * Reza Ebrahimi
 
@@ -10,7 +10,7 @@ This library is written based on the nRF24L01+ Preliminary Product Specification
 
 You can use this library in any way, shape or form. I'd be very happy if you mention my name though.
 
-##HOW TO USE
+## HOW TO USE
 
 As mentioned earlier, first you need to implement low level settings like SPI, delay function and pin configurations inside nrf24l01_low_level.c file (LEVEL 1).
 
@@ -31,7 +31,7 @@ the default value for radio channel is set to channel 32.
 the default payload width is 1 byte and its static.
 the default value for datarate is 1Mbps.
 
-##HOW IT WORKS
+## HOW IT WORKS
 
 Functions can be categorized into different levels: from low level APIs up to higher ones.
 Lower level APIs are used by higher level APIs. Use LEVEL 4 functions (or sometimes LEVEL 3, 
@@ -75,6 +75,6 @@ LEVEL 4:
  *  uint8_t nrf24_transmit_status()
  *  uint8_t nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowledgement_state)
 
-##EXAMPLE 
+## EXAMPLE 
  
  As an example, a simple byte transmitter for arduino/atmega boards is provided.
