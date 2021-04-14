@@ -2,7 +2,7 @@
 * version 1.0
 * Reza Ebrahimi
 
-This library is written in portable C, and is MCU independant. It consumes a small amount of RAM (under 50 bytes) and program memory (under 2 KB). In order to implement it to your MCU of choice, you need to manipulate functions inside nrf24l01_low_level.c file (SPI, pin configurations) and leave other files as they are.
+This library is written in **portable C**, and is **MCU independant**. It consumes a small amount of RAM (under 50 bytes) and program memory (under 2 KB). In order to implement it to your MCU of choice, you need to manipulate functions inside nrf24l01_low_level.c file (SPI, pin configurations) and leave other files as they are.
 
 nRF24L01+ C library abstracts away the internals of the hardware, using LEVEL 4 functions (description below).
 
