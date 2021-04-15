@@ -1,3 +1,5 @@
+#ifndef NRF24L01_H
+#define NRF24L01_H
 /*nrf24l01: MSbit to LSbit, LSbyte to MSbyte*/
 #include <stdio.h>
 #include <stdint.h>
@@ -207,3 +209,5 @@ uint8_t nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowle
 uint8_t nrf24_transmit_status();
 void nrf24_dynamic_ack(uint8_t state);
 uint8_t nrf24_flush(uint8_t fifo_select);
+
+#endif
