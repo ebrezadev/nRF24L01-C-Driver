@@ -1,6 +1,8 @@
 /*transmitter code example, transmits an ascending number every TIME_GAP milliseconds in NO_ACK mode*/
 /*static payload length of 1 byte, 1Mbps datarate, -6 dbm rf transmit power, channel 32 of 125 chanels*/
-#include "nrf24l01.h"
+extern "C"{
+	#include "nrf24l01.h"
+}
 
 #define TIME_GAP    500
 
