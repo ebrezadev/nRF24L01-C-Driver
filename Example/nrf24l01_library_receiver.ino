@@ -1,6 +1,8 @@
 /*receiver code example, prints the received payload to the Serial monitor in HEX format*/
 /*static payload length of 1 byte, 1Mbps datarate, -6 dbm rf transmit power, channel 32 of 125 chanels*/
-#include "nrf24l01.h"
+extern "C"{
+	#include "nrf24l01.h"
+}
 
 void setup()
 {

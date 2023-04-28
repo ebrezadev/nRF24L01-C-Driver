@@ -1,5 +1,6 @@
 /*low level api example for avr/arduino*/
 #include "nrf24l01.h"
+#include <Arduino.h>
 
 /*macros for SPI, CE and CSN pin configuration, change pins # according to mcu*/
 #define MOSI_PIN    11
