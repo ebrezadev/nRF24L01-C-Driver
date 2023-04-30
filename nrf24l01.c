@@ -403,6 +403,19 @@ void nrf24_rf_power(uint8_t rf_power)
   nrf24_write(RF_SETUP_ADDRESS, &register_new_value, 1, CLOSE);
 }
 
+/*read whether the current channel is busy (has traffic), needs to be called from RX mode*/
+uint8_t nrf24_rf_channel_read_busy(uint8_t rf_channel)
+{
+  uint8_t signals_detected;
+  nrf24_read(RPD_REG_ADDRESS, &signals_detected, 1, CLOSE);
+  if (signals_detected) {
+    return CHANNEL_BUSY;
+  }
+  else {
+    return CHANNEL_CLEAR;
+  }
+}
+
 /*test whether a channel is busy (has traffic), waiting for ms_to_test*/
 uint8_t nrf24_rf_channel_test_busy(uint8_t rf_channel, uint16_t ms_to_test)
 {
@@ -422,8 +435,7 @@ uint8_t nrf24_rf_channel_test_busy(uint8_t rf_channel, uint16_t ms_to_test)
     // wait at least 1 ms before declaring channel clear
     delay_function(1 > ms_to_test ? 1 : ms_to_test);
     // Received Power Detector latches to 1 if there was a signal >-64dBm for at least 40 uS consecutively since RX mode was enabled
-    uint8_t signals_detected;
-    nrf24_read(RPD_REG_ADDRESS, &signals_detected, 1, CLOSE);
+    uint8_t signals_detected = nrf24_rf_channel_read_busy(rf_channel);
     // switch back to old channel
     nrf24_rf_channel(previous_channel);
     // switch back to old mode

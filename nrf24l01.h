@@ -189,6 +189,7 @@ void nrf24_mode(uint8_t mode);
 void nrf24_SPI(uint8_t input);
 void nrf24_CE(uint8_t input);
 void nrf24_address_width(uint8_t address_width);
+uint8_t nrf24_rf_channel_read_busy(uint8_t rf_channel);
 uint8_t nrf24_rf_channel_test_busy(uint8_t rf_channel, uint16_t ms_to_test);
 void nrf24_rf_channel(uint8_t rf_channel);
 void nrf24_rf_power(uint8_t rf_power);
