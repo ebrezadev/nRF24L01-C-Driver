@@ -27,46 +27,6 @@ uint8_t datapipe_address[MAXIMUM_NUMBER_OF_DATAPIPES][ADDRESS_WIDTH_DEFAULT] = {
   {0X20, 0XC3, 0XC2, 0XC1, 0XA5}
 };
 
-/*function to enable or disable sending without acknowledge.
-   if disabled, TX must send a payload with ACK-request and receiver must be able to answer it.
-   manipulates EN_DYN_ACK inside FEATURE*/
-void nrf24_payload_without_ack(uint8_t state)
-{
-  if (state == ENABLE)
-  {
-    nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
-    register_new_value = register_current_value | (1 << EN_DYN_ACK);
-    nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
-  }
-  else
-  {
-    nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
-    register_new_value = register_current_value & (~(1 << EN_DYN_ACK));
-    nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
-  }
-}
-
-/*function to enable or disable sending with acknowledge.
-   if disabled, the payload can be sent only without ACK-request.
-   manipulates EN_ACK_PAY and EN_DPL inside FEATURE as Dynamic Payload Length is required.*/
-void nrf24_payload_with_ack(uint8_t state) {
-  if (state == ENABLE)
-  {
-    nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
-    register_new_value = register_current_value | (1 << EN_ACK_PAY) | (1 << EN_DPL);
-    nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
-    nrf24_read(DYNPD_ADDRESS, &register_current_value, 1, CLOSE);
-    register_new_value = register_current_value | 0b111111;
-    nrf24_write(DYNPD_ADDRESS, &register_new_value, 1, CLOSE);
-  }
-  else
-  {
-    nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
-    register_new_value = register_current_value & (~((1 << EN_ACK_PAY) | (1 << EN_DPL)));
-    nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
-  }
-}
-
 /*function for PTX device to transmit 1 to 32 bytes of data, used for both dynamic payload length
    and static payload length methods. acknowledgemet state could be NO_ACK_MODE or ACK_MODE*/
 uint8_t nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowledgement_state)
@@ -327,6 +287,48 @@ void nrf24_dynamic_payload(uint8_t state, uint8_t datapipe)
     register_new_value = register_current_value & (~(1 << EN_DPL));
     nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
     NRF24_en_dynamic_payload = DISABLE;
+  }
+}
+
+/*function to enable or disable sending without acknowledge.
+   if disabled, TX must send a payload with ACK-request and receiver must be able to answer it.
+   manipulates EN_DYN_ACK inside FEATURE*/
+void nrf24_payload_without_ack(uint8_t state)
+{
+  if (state == ENABLE)
+  {
+    nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
+    register_new_value = register_current_value | (1 << EN_DYN_ACK);
+    nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
+  }
+  else
+  {
+    nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
+    register_new_value = register_current_value & (~(1 << EN_DYN_ACK));
+    nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
+  }
+}
+
+/*function to enable or disable sending with acknowledge.
+   if disabled, the payload can be sent only without ACK-request.
+   manipulates EN_ACK_PAY and EN_DPL inside FEATURE as Dynamic Payload Length is required.*/
+void nrf24_payload_with_ack(uint8_t state)
+{
+  if (state == ENABLE)
+  {
+    nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
+    register_new_value = register_current_value | (1 << EN_ACK_PAY) | (1 << EN_DPL);
+    nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
+    nrf24_read(DYNPD_ADDRESS, &register_current_value, 1, CLOSE);
+	// enable dynamic payload for all pipes
+    register_new_value = register_current_value | 0b111111;
+    nrf24_write(DYNPD_ADDRESS, &register_new_value, 1, CLOSE);
+  }
+  else
+  {
+    nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
+    register_new_value = register_current_value & (~((1 << EN_ACK_PAY) | (1 << EN_DPL)));
+    nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
   }
 }
 
