@@ -2,34 +2,42 @@
 * version 1.0
 * Reza Ebrahimi
 
-This library is written in **portable C**, and is **MCU independent**. It consumes a small amount of RAM (under 50 bytes) and program memory (under 2 KB). In order to implement it to your MCU of choice, you need to manipulate functions inside nrf24l01_low_level.c file (SPI, pin configurations) and leave other files as they are.
+This library is written in **portable C**, and is **MCU independent**. It consumes a small amount of RAM (under 50 bytes) and program memory (under 2 KB).  
+In order to implement it to your MCU of choice, you need to manipulate functions inside nrf24l01_low_level.c file (SPI, pin configurations) and leave other files as they are.
 
-nRF24L01+ C library abstracts away the internals of the hardware, using LEVEL 4 functions (description below).
-
-This library is written based on the nRF24L01+ Preliminary Product Specification released by Nordic Semiconductor and is not influenced by other (probably numorous) libraries out there. Any resemblance to pre-existing code is unintentional.
+nRF24L01+ C library abstracts away the internals of the hardware, using LEVEL 4 functions (description below).  
+It is written based on the nRF24L01+ Preliminary Product Specification released by Nordic Semiconductor and is not influenced by other (probably numorous) libraries out there. Any resemblance to pre-existing code is unintentional.
 
 You can use this library in any way, shape or form. I'd be very happy if you mention my name though.
 
 ## HOW TO USE
+As mentioned earlier, first you need to implement low level settings like SPI, delay function and pin configurations inside nrf24l01_low_level.c file (LEVEL 1).  
+Start by calling nrf24_device(uint8_t device_mode, uint8_t reset_state) function.  
+You can set the device mode to either TRANSMITTER, RECEIVER, POWER_SAVING or TURN_OFF and reset_state to RESET or NO_RESET.  
+If this is the first time nrf24_device is called, nrf24l01+ is reset regardless of reset_state.  
+nrf24_device initializes the low level API like SPI etc, and sets nrf24l01+ with default values and settings.  
+These settings and values can be changed with manipulating macros inside nrf24l01.h, or by calling LEVEL 3 functions.  
+The next steps depend on the chosen device_mode.  
 
-As mentioned earlier, first you need to implement low level settings like SPI, delay function and pin configurations inside nrf24l01_low_level.c file (LEVEL 1).
+### TRANSMITTER:
+Use nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowledgement_state) to send an array of 1 byte blocks, with the specified payload_width and acknowledgement_state (could be ACK_MODE or NO_ACK_MODE).  
+If nrf24l01+ dynamic payload width is disabled, payload_width is ignored.  
+nrf24_transmit has 2 different outputs: TRANSMIT_BEGIN and TRANSMIT_FAIL (in case of wrong mode of operation or full TX FIFO buffer).  
+Next, you can use nrf24_transmit_status() which has no input, but gives back status: TRANSMIT_IN_PROGRESS if the payload is still not sent or if TX buffer is empty, TRANSMIT_DONE if the payload is sent successfully, TRANSMIT_FAILED if the payload has reached he maximum number of retransmits (only in ACK_MODE).  
 
-Start by calling nrf24_device(uint8_t device_mode, uint8_t reset_state) function. You can set the device mode to either TRANSMITTER, RECEIVER, POWER_SAVING or TURN_OFF and reset_state to RESET or NO_RESET. if this is the first time nrf24_device is called, nrf24l01+ is reset regardless of reset_state. nrf24_device initializes the low level API like SPI etc, and sets nrf24l01+ with default values and settings. These settings and values can be changed with manipulating macros inside nrf24l01.h, or by calling LEVEL 3 functions. the next steps depend on the chosen device_mode.
-
-For TRANSMITTER:
-Use nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowledgement_state) to send an array of 1 byte blocks, with the specified payload_width and acknowledgement_state (could be ACK_MODE or NO_ACK_MODE). If nrf24l01+ is set to static payload width, payload_width is ignored. nrf24_transmit has 2 different outputs: TRANSMIT_BEGIN and TRANSMIT_FAIL (in case of wrong mode of operation or full TX FIFO buffer). Next, you can use nrf24_transmit_status() which has no input, but gives back status: TRANSMIT_IN_PROGRESS if the payload is still not sent or if TX buffer is empty, TRANSMIT_DONE if the payload is sent successfully, TRANSMIT_FAILED if the payload has reached he maximum number of retransmits (only in ACK_MODE).
-
-For RECEIVER:
-nrf24_receive(uint8_t *payload, uint8_t payload_width) can be used to both poll the RX buffer, and receive the payload if its already inside the buffer. payload_width is ignored if nrf24l01+ was set to static payload width mode. nrf24_receive outputs the polling results as: OPERATION_ERROR if not in RECEIVER mode, RECEIVE_FIFO_EMPTY in case of empty buffer (payload array is not updated) and OPERATION_DONE if the received data is saved inside payload array.
-
+### RECEIVER:
+nrf24_receive(uint8_t *payload, uint8_t payload_width) can be used to both poll the RX buffer, and receive the payload if its already inside the buffer.  
+payload_width is ignored if nrf24l01+ was set to static payload width mode.  
+nrf24_receive outputs the polling results as: OPERATION_ERROR if not in RECEIVER mode, RECEIVE_FIFO_EMPTY in case of empty buffer (payload array is not updated) and OPERATION_DONE if the received data is saved inside payload array.  
 For POWER_SAVING or TURN_OFF:
 You cannot send or receive any data in these modes of operation, these are used only to reduce power consumption. device_mode can be changed mid code.
 
-General considerations:
-the default value for transmit radio power is set to -6 dbm.
-the default value for radio channel is set to channel 32.
-the default payload width is 1 byte and its static.
-the default value for datarate is 1Mbps.
+### defaults
+* transmit radio power is set to -6 dbm
+* radio channel is set to channel 32
+* payload width is 1 byte, dynamic payload with is enabled
+* sending with and without acknowledge are both enabled
+* datarate is 1Mbps
 
 ## HOW IT WORKS
 
@@ -62,6 +70,8 @@ LEVEL 3:
  *  void nrf24_prx_static_payload_width(uint8_t static_payload_width, uint8_t number_of_datapipes)
  *  void nrf24_datapipe_address_configuration()
  *  void nrf24_datapipe_ptx(uint8_t datapipe_number)
+ *  void nrf24_payload_without_ack(uint8_t state)
+ *  void nrf24_payload_with_ack(uint8_t state)
  *  void nrf24_dynamic_payload(uint8_t state, uint8_t datapipe)
  *  void nrf24_auto_acknowledgment_setup(uint8_t datapipe)
  *  void nrf24_automatic_retransmit_setup(uint16_t delay_time, uint8_t retransmit_count)
@@ -75,6 +85,14 @@ LEVEL 4:
  *  uint8_t nrf24_transmit_status()
  *  uint8_t nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowledgement_state)
 
-## EXAMPLE 
- 
- As an example, a simple byte transmitter for arduino/atmega boards is provided.
+## EXAMPLE
+ As an example, a simple byte transmitter for arduino/atmega boards is provided.  
+ Another example can be found in the ch32v003fun repo.
+
+## TROUBLESHOOTING
+The IC operates on 1.9 - 3.3V.
+
+The decoupling capacitors specified in the manufacturer datasheet are < 100nF in total (very, very small).  
+If you experience any difficulties sending / receiving, try adding a 10uF (or more) capacitor directly across the V_in and GND of your module.  
+Ceramic capacitors have lower ESR than electrolytic capacitors but both should bring a definite improvement.  
+The closer the capacitor is placed to the chip, the lower the inductance, the better.  

@@ -14,8 +14,8 @@
 #define RF_PWR_DEFAULT                6               /*0, -6, -12, -18*/
 #define STATIC_PAYLOAD_WIDTH_DEFAULT  1               /*for static payload mode, configurable between 1 and 32 bytes for PRX device ONLY (RX_PW_Pn, n for data pipe n)(no register for payload length in PTX device)*/
 #define NUMBER_OF_DP_DEFAULT          1               /*number of datapipes, 1 to 6*/ 
-#define RETRANSMIT_DELAY_DEFAULT      500
-#define RETRANSMIT_COUNT_DEFAULT      2
+#define RETRANSMIT_DELAY_DEFAULT      500             /*in uS*/
+#define RETRANSMIT_COUNT_DEFAULT      3
  
 #define OPEN                          1
 #define CLOSE                         0
@@ -201,6 +201,8 @@ void nrf24_datapipe_address_configuration();
 void nrf24_datapipe_ptx(uint8_t datapipe_number);
 void nrf24_automatic_retransmit_setup(uint16_t delay_time, uint8_t retransmit_count);
 void nrf24_auto_acknowledgment_setup(uint8_t datapipe);
+void nrf24_payload_without_ack(uint8_t state);
+void nrf24_payload_with_ack(uint8_t state);
 void nrf24_dynamic_payload(uint8_t state, uint8_t datapipe);
 void nrf24_device(uint8_t device_mode, uint8_t reset_state);
 void nrf24_send_payload(uint8_t *payload, uint8_t payload_width);
