@@ -1,5 +1,10 @@
 #include "nrf24l01.h"
 
+/*nRF24L01+ features, enable / disable as needed*/
+static uint8_t NRF24_en_ack = ENABLE;
+static uint8_t NRF24_en_no_ack = ENABLE;
+static uint8_t NRF24_en_dynamic_payload = ENABLE;
+
 /*global variables related to this file*/
 static uint8_t SPI_command;                                       /*1 byte spi command*/
 static uint8_t register_current_value;                            /*in order to change some bits of internal registers or to check their content*/
@@ -9,8 +14,7 @@ static uint8_t current_address_width;                             /*current addr
 static uint8_t reset_flag = 0;                                    /*reset flag lets the software know if the nrf24l01+ has ever been reset or not*/
 static uint8_t current_mode = DEVICE_NOT_INITIALIZED;             /*current mode of operation: DEVICE_NOT_INITIALIZED, PRX, PTX, STANDBYI, STANDBYII, POWER_DOWN*/
 static uint8_t current_payload_width;                             /*payload width could be from 1 to 32 bytes, in either dynamic or static forms*/
-static uint8_t current_acknowledgement_state = NO_ACK_MODE;       
-static uint8_t dynamic_payload = DISABLE;
+static uint8_t current_acknowledgement_state = NO_ACK_MODE;
 
 /*2 dimensional array of pipe addresses (5 byte address width) by default. you can change addresses using a new array later.
   Pipe 1 address could be anything. pipe 3 to 6 addresses share the first 4 bytes with pipe 2 and only differ in byte 5*/
@@ -23,10 +27,10 @@ uint8_t datapipe_address[MAXIMUM_NUMBER_OF_DATAPIPES][ADDRESS_WIDTH_DEFAULT] = {
   {0X20, 0XC3, 0XC2, 0XC1, 0XA5}
 };
 
-/*function to enable or disable dynamic acknowledge. if enabled, you can disable acknowledge
-   on a specific payload with W_TX_PAYLOAD_NOACK or enable acknowledge using W_TX_PAYLOAD commands.
-   if disabled, you cannot disable acknowledging a payload. manipulates EN_DYN_ACK inside FEATURE*/
-void nrf24_dynamic_ack(uint8_t state)
+/*function to enable or disable sending without acknowledge.
+   if disabled, TX must send a payload with ACK-request and receiver must be able to answer it.
+   manipulates EN_DYN_ACK inside FEATURE*/
+void nrf24_payload_without_ack(uint8_t state)
 {
   if (state == ENABLE)
   {
@@ -42,6 +46,27 @@ void nrf24_dynamic_ack(uint8_t state)
   }
 }
 
+/*function to enable or disable sending with acknowledge.
+   if disabled, the payload can be sent only without ACK-request.
+   manipulates EN_ACK_PAY and EN_DPL inside FEATURE as Dynamic Payload Length is required.*/
+void nrf24_payload_with_ack(uint8_t state) {
+  if (state == ENABLE)
+  {
+    nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
+    register_new_value = register_current_value | (1 << EN_ACK_PAY) | (1 << EN_DPL);
+    nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
+    nrf24_read(DYNPD_ADDRESS, &register_current_value, 1, CLOSE);
+    register_new_value = register_current_value | 0b111111;
+    nrf24_write(DYNPD_ADDRESS, &register_new_value, 1, CLOSE);
+  }
+  else
+  {
+    nrf24_read(FEATURE_ADDRESS, &register_current_value, 1, CLOSE);
+    register_new_value = register_current_value & (~((1 << EN_ACK_PAY) | (1 << EN_DPL)));
+    nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
+  }
+}
+
 /*function for PTX device to transmit 1 to 32 bytes of data, used for both dynamic payload length
    and static payload length methods. acknowledgemet state could be NO_ACK_MODE or ACK_MODE*/
 uint8_t nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowledgement_state)
@@ -50,9 +75,9 @@ uint8_t nrf24_transmit(uint8_t *payload, uint8_t payload_width, uint8_t acknowle
   if ((!(register_current_value & (1 << TX_FULL))) && (current_mode == PTX))
   {
     current_acknowledgement_state = acknowledgement_state;      /*setting the acknowledgement state to either NO_ACK or ACK, based on input*/
-    if (dynamic_payload == ENABLE)
-      payload_width = current_payload_width;
-    nrf24_send_payload(payload, payload_width);                 /*the actual function to send data*/
+    if (NRF24_en_dynamic_payload == ENABLE)
+      current_payload_width = payload_width;
+    nrf24_send_payload(payload, payload_width);          /*the actual function to send data*/
     return (TRANSMIT_BEGIN);                                     /*TX FIFO is not full and nrf24l01+ mode is standby ii or ptx*/
   }
   else
@@ -107,7 +132,7 @@ uint8_t nrf24_receive(uint8_t *payload, uint8_t payload_width)
     nrf24_read(STATUS_ADDRESS, &register_current_value, 1, CLOSE);
     if (register_current_value & (1 << RX_DR))                         /*if received data is ready inside RX FIFO*/
     {
-      if(dynamic_payload == DISABLE)                                    /*if dynamic payload width is disabled, use the static payload width and ignore the input*/
+      if(NRF24_en_dynamic_payload == DISABLE)                                    /*if dynamif payload width is disabled, use the static payload width and ignore the input*/
         payload_width = current_payload_width;
         
       nrf24_SPI(SPI_ON);                                                /*sending the read payload command to nrf24l01+*/                          
@@ -175,7 +200,7 @@ uint8_t nrf24_flush(uint8_t fifo_select)
 /*must be called atleast once, which happens with calling nrf24_device function*/
 void nrf24_reset()
 {
-  reset_flag = 1;
+  reset_flag = RESET;
   nrf24_CE(CE_OFF);
   register_new_value = CONFIG_REGISTER_DEFAULT;
   nrf24_write(CONFIG_ADDRESS, &register_new_value, 1, CLOSE);
@@ -213,8 +238,9 @@ void nrf24_reset()
   nrf24_prx_static_payload_width(STATIC_PAYLOAD_WIDTH_DEFAULT, NUMBER_OF_DP_DEFAULT);
   nrf24_automatic_retransmit_setup(RETRANSMIT_DELAY_DEFAULT, RETRANSMIT_COUNT_DEFAULT);
   nrf24_auto_acknowledgment_setup(NUMBER_OF_DP_DEFAULT);
-  nrf24_dynamic_payload(DISABLE, NUMBER_OF_DP_DEFAULT);
-  nrf24_dynamic_ack(ENABLE);
+  nrf24_dynamic_payload(NRF24_en_dynamic_payload, NUMBER_OF_DP_DEFAULT);
+  nrf24_payload_without_ack(NRF24_en_no_ack);
+  nrf24_payload_with_ack(NRF24_en_ack);
 }
 
 /*used by firmware to set the nrf24 mode in TRANSMITTER, RECEIVER, POWER_SAVING or TURN_OFF states, and reseting the device
@@ -294,13 +320,13 @@ void nrf24_dynamic_payload(uint8_t state, uint8_t datapipe)
     if (datapipe < 7)
       register_new_value = (1 << datapipe) - 1;                       /*turning on dynamic payload width on chosen datapipes, using DYNPD register*/
     nrf24_write(DYNPD_ADDRESS, &register_new_value, 1, CLOSE);
-    dynamic_payload = ENABLE;
+    NRF24_en_dynamic_payload = ENABLE;
   }
   else
   {
     register_new_value = register_current_value & (~(1 << EN_DPL));
     nrf24_write(FEATURE_ADDRESS, &register_new_value, 1, CLOSE);
-    dynamic_payload = DISABLE;
+    NRF24_en_dynamic_payload = DISABLE;
   }
 }
 
@@ -333,9 +359,13 @@ void nrf24_prx_static_payload_width(uint8_t static_payload_width, uint8_t number
 }
 
 /*datapipes are turned on and off using EN_RXADDR register, PRX datapipe addresses are located in RX_ADDR_Pn, TX address is located inside TX_ADDR*/
-void nrf24_datapipe_enable(uint8_t number_of_datapipes)
+void nrf24_datapipe_enable(uint8_t datapipe)
 {
-  register_new_value = (1 << number_of_datapipes) - 1;
+  nrf24_read(EN_RXADDR_ADDRESS, &register_current_value, 1, CLOSE);
+  if (NRF24_en_ack) {
+    register_current_value |= (1 << ERX_P0);
+  }
+  register_new_value = register_current_value | (1 << datapipe);
   nrf24_write(EN_RXADDR_ADDRESS, &register_new_value, 1, CLOSE);
 }
 
