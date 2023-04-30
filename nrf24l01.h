@@ -62,6 +62,9 @@
 #define RECEIVE_FIFO_EMPTY            2
 #define TX_BUFFER                     1
 #define RX_BUFFER                     0
+// return states for nrf24_rf_channel_test_busy
+#define CHANNEL_CLEAR                 0
+#define CHANNEL_BUSY                  1
 
 /*bits definition section*/
 #define MASK_RX_DR          6               /*mask interrupt caused by RX_DR: 1 interrupt not reflected on IRQ pin (IRQ is active low), inside CONFIG register*/
@@ -112,7 +115,6 @@
 #define RX_P_NO_2           3
 #define RX_P_NO_1           2
 #define RX_P_NO_0           1
-#define TX_FULL             0
 #define PLOS_CNT_3          7               /*inside OBSERVE_TX register, counts the total number of retransmissions since last channel change. reset by writing to RF_CH*/
 #define PLOS_CNT_2          6
 #define PLOS_CNT_1          5
@@ -187,9 +189,11 @@ void nrf24_mode(uint8_t mode);
 void nrf24_SPI(uint8_t input);
 void nrf24_CE(uint8_t input);
 void nrf24_address_width(uint8_t address_width);
+uint8_t nrf24_rf_channel_read_busy(uint8_t rf_channel);
+uint8_t nrf24_rf_channel_test_busy(uint8_t rf_channel, uint16_t ms_to_test);
 void nrf24_rf_channel(uint8_t rf_channel);
 void nrf24_rf_power(uint8_t rf_power);
-void nrf24_rf_datarate(uint8_t rf_datarate);
+void nrf24_rf_datarate(uint16_t rf_datarate);
 void nrf24_read(uint8_t address, uint8_t *value, uint8_t data_length, uint8_t spi_state);
 void nrf24_write(uint8_t address, uint8_t *value, uint8_t data_length, uint8_t spi_state);
 void delay_function(uint32_t duration_ms);
