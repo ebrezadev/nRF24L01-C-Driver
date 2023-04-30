@@ -355,7 +355,7 @@ void nrf24_address_width(uint8_t address_width)
 }
 
 /*datarate settings, you can choose between 2mbps, 1mbps, 250kbps*/
-void nrf24_rf_datarate(uint8_t rf_datarate)
+void nrf24_rf_datarate(uint16_t rf_datarate)
 {
   nrf24_read(RF_SETUP_ADDRESS, &register_current_value, 1, CLOSE);
   register_current_value &= ~((1 << RF_DR_LOW) | (1 << RF_DR_HIGH));
@@ -401,6 +401,46 @@ void nrf24_rf_power(uint8_t rf_power)
       break;
   }
   nrf24_write(RF_SETUP_ADDRESS, &register_new_value, 1, CLOSE);
+}
+
+/*test whether a channel is busy (has traffic), waiting for ms_to_test*/
+uint8_t nrf24_rf_channel_test_busy(uint8_t rf_channel, uint16_t ms_to_test)
+{
+  if ((rf_channel <= 125) && (rf_channel >= 1))
+  {
+    // back up old channel
+    uint8_t previous_channel;
+    nrf24_read(RF_CH_ADDRESS, &previous_channel, 1, CLOSE);
+    // back up old mode
+    uint8_t previous_mode = current_mode;
+    // switch to new channel
+    nrf24_rf_channel(rf_channel);
+    // switch to RX, Received Power Detector is set to 0 and begins sampling
+    if (previous_mode != PRX) {
+      nrf24_mode(PRX);
+    }
+    // wait at least 1 ms before declaring channel clear
+    delay_function(1 > ms_to_test ? 1 : ms_to_test);
+    // Received Power Detector latches to 1 if there was a signal >-64dBm for at least 40 uS consecutively since RX mode was enabled
+    uint8_t signals_detected;
+    nrf24_read(RPD_REG_ADDRESS, &signals_detected, 1, CLOSE);
+    // switch back to old channel
+    nrf24_rf_channel(previous_channel);
+    // switch back to old mode
+    if (previous_mode != PRX) {
+      nrf24_mode(previous_mode);
+    }
+    if (signals_detected) {
+      return CHANNEL_BUSY;
+    }
+    else {
+      return CHANNEL_CLEAR;
+    }
+  }
+  else
+  {
+		return CHANNEL_BUSY;
+  }
 }
 
 /*nrf24l01+ RF channel selection, from 1 to 125*/

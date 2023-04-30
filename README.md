@@ -54,6 +54,7 @@ LEVEL 3:
  *  void nrf24_mode(uint8_t mode)
  *  void nrf24_crc_configuration(uint8_t crc_enable, uint8_t crc_encoding_scheme)
  *  void nrf24_interrupt_mask(uint8_t rx_mask, uint8_t tx_mask, uint8_t max_rt_mask)
+ *  uint8_t nrf24_rf_channel_test_busy(uint8_t rf_channel, uint16_t ms_to_test)
  *  void nrf24_rf_channel(uint8_t rf_channel)
  *  void nrf24_rf_power(uint8_t rf_power)
  *  void nrf24_rf_datarate(uint8_t rf_datarate)
